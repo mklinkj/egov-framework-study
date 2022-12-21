@@ -8,12 +8,22 @@
   <packaging>war</packaging>
   <version>4.0.0</version>
   <name>lab101-project-create-tutor</name>
-  <url>http://www.egovframe.go.kr</url>
+  <url>https://www.egovframe.go.kr</url>
 
   <properties>
+    <java.version>17</java.version>
+
     <spring.maven.artifact.version>5.3.6</spring.maven.artifact.version>
     <org.egovframe.rte.version>4.0.0</org.egovframe.rte.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jetty.version>10.0.13</jetty.version>
+
+    <!-- Maven 플러그인 버전 관리 -->
+    <mybatis-generator-maven-plugin.version>1.4.1</mybatis-generator-maven-plugin.version>
+    <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
+    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+    <maven-toolchains-plugin.version>3.1.0</maven-toolchains-plugin.version>
   </properties>
 
   <repositories>
@@ -43,6 +53,17 @@
     <!-- 표준프레임워크 실행환경 -->
     <dependency>
       <groupId>org.egovframe.rte</groupId>
+      <artifactId>org.egovframe.rte.fdl.cmmn</artifactId>
+      <version>${org.egovframe.rte.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.aspectj</groupId>
+          <artifactId>aspectjrt</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.egovframe.rte</groupId>
       <artifactId>org.egovframe.rte.ptl.mvc</artifactId>
       <version>${org.egovframe.rte.version}</version>
       <exclusions>
@@ -56,6 +77,27 @@
       <groupId>org.egovframe.rte</groupId>
       <artifactId>org.egovframe.rte.psl.dataaccess</artifactId>
       <version>${org.egovframe.rte.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax</groupId>
+          <artifactId>javaee-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.egovframe.rte</groupId>
+      <artifactId>org.egovframe.rte.fdl.logging</artifactId>
+      <version>${org.egovframe.rte.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl-over-slf4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>log4j-over-slf4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.egovframe.rte</groupId>
@@ -71,7 +113,7 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
+      <version>4.0.1</version>
       <scope>provided</scope>
     </dependency>
 
@@ -79,26 +121,28 @@
       <groupId>javax.servlet</groupId>
       <artifactId>jstl</artifactId>
       <version>1.2</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>taglibs</groupId>
       <artifactId>standard</artifactId>
       <version>1.1.2</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr</artifactId>
-      <version>3.5</version>
+      <version>3.5.3</version>
     </dependency>
 
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
-      <version>2.3.2</version>
+      <version>2.7.1</version>
     </dependency>
-        
+
     <!-- mysql이나 oracle 필요시 사용 -->
     <!-- 
     <dependency>
@@ -161,15 +205,6 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
-            <encoding>UTF-8</encoding>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>hibernate3-maven-plugin</artifactId>
           <version>2.1</version>
@@ -205,12 +240,18 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.2</version>
+          <version>${maven-surefire-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${maven-war-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
-            <!-- EMMA -->
+      <!-- EMMA -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -232,11 +273,86 @@
         <artifactId>emma-maven-plugin</artifactId>
         <inherited>true</inherited>
       </plugin>
-            <!-- JavaDoc -->
+      <!-- JavaDoc -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <compilerArgs>
+            <arg>-Xlint:all</arg>
+            <arg>-Xlint:-processing
+            </arg> <!-- No processor claimed any of these annotations 경고는 노출되지않게 설정 -->
+            <arg>-Xlint:-path</arg> <!-- bad path element 경고 무시 -->
+          </compilerArgs>
+          <showWarnings>true</showWarnings>
+          <showDeprecation>true</showDeprecation>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-toolchains-plugin</artifactId>
+        <version>${maven-toolchains-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>toolchain</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <toolchains>
+            <jdk>
+              <version>${java.version}</version>
+            </jdk>
+          </toolchains>
+        </configuration>
+      </plugin>
+
+      <!-- Jetty 서버 구동 -->
+      <plugin>
+        <!-- https://www.eclipse.org/jetty/documentation/jetty-10/programming-guide/index.html#jetty-maven-plugin -->
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>${jetty.version}</version>
+        <configuration>
+          <webApp>
+            <descriptor>${project.basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
+            <contextPath>/</contextPath>
+            <sessionHandler>
+              <sessionIdPathParameterName>none</sessionIdPathParameterName>
+            </sessionHandler>
+          </webApp>
+          <detail>true</detail>
+          <deployMode>EMBED</deployMode>
+          <stopKey>CTRL+C</stopKey>
+          <stopPort>8999</stopPort>
+          <!--
+            변경 감지 자동 재시작시 ContextLoaderListener가 제대로 실행되지 않는 오류가 발생한다.
+            설정을 -1로하여 자동 재시작이 일어나지 않도록 한다.
+           -->
+          <scan>-1</scan>
+          <scanTargetPatterns>
+            <scanTargetPattern>
+              <directory>src/main/webapp/WEB-INF</directory>
+              <includes>
+                <include>**/*.properties</include>
+                <include>**/*.xml</include>
+              </includes>
+              <excludes>
+                <exclude>**/*.jsp</exclude>
+              </excludes>
+            </scanTargetPattern>
+          </scanTargetPatterns>
+        </configuration>
       </plugin>
     </plugins>
   </build>

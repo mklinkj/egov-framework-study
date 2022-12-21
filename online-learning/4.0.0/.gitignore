@@ -39,3 +39,6 @@ build/
 
 ### SVN ###
 .svn
+
+## .log ###
+*.log

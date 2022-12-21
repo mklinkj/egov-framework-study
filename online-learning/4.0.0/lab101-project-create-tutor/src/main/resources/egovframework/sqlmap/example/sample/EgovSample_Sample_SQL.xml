@@ -75,15 +75,15 @@
 	
 	<select id="sampleDAO.selectSampleListTotCnt" parameterClass="searchVO" resultClass="int">
 
-			SELECT COUNT(*) totcnt
-			FROM SAMPLE
-			WHERE 1=1
-			<isEqual prepend="AND" property="searchCondition" compareValue="0">
-				ID LIKE '%' || #searchKeyword# || '%'
-			</isEqual>
-			<isEqual prepend="AND" property="searchCondition" compareValue="1">
-				NAME LIKE '%' || #searchKeyword# || '%'
-			</isEqual>
+		SELECT COUNT(*) totcnt
+		FROM SAMPLE
+		WHERE 1=1
+		<isEqual prepend="AND" property="searchCondition" compareValue="0">
+			ID LIKE '%' || #searchKeyword# || '%'
+		</isEqual>
+		<isEqual prepend="AND" property="searchCondition" compareValue="1">
+			NAME LIKE '%' || #searchKeyword# || '%'
+		</isEqual>
 	</select>
 
 </sqlMap>
